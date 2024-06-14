@@ -49,9 +49,12 @@ export async function POST(request: Request) {
   if (!customer) {
     return Response.json({ success: false });
   }
+
+  
   const faqs: IFaqInstance[] = await FaqInstance.find({
     customerAccount: customer.id,
   });
+
   console.log(
     "FAQ",
     faqs.map((faq) => {
