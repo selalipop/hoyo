@@ -4,7 +4,7 @@ enum FireworksModel {
 import {} from "openai";
 import { Chat } from "openai/resources/chat/chat";
 
-async function fireworksInference(
+export async function fireworksInference(
   modelId: FireworksModel,
   messages: Array<Chat.ChatCompletionMessageParam>,
   temperature: number = 0.9,

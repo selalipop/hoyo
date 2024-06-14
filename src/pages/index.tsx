@@ -1,7 +1,7 @@
 import { BotCreationEvent } from "@/app/api/bot/botCreationEvent";
 import { useEffect, useState } from "react";
 import { useAsyncEffect } from "use-async-effect";
-import { Button, TextField } from "@radix-ui/themes";
+import { Button, Flex, TextField } from "@radix-ui/themes";
 
 export async function* streamingFetch<T>(
   input: RequestInfo | URL,
@@ -24,9 +24,14 @@ export async function* streamingFetch<T>(
 }
 
 export default function RenderStreamData() {
-  const [data, setData] = useState<any[]>([]);
+  const [faq, setFaq] = useState<
+    {
+      question: string;
+      answer: string;
+    }[]
+  >([]);
   const [url, setUrl] = useState<any[]>([]);
-  const [screenshot, setScreenshot] = useState<any[]>([]);
+  const [screenshot, setScreenshot] = useState<string>("");
 
   const handleSubmit = async () => {
     const headers = {
@@ -46,6 +51,9 @@ export default function RenderStreamData() {
       if (event.type === "webpageScraped") {
         setScreenshot(event.screenshot);
       }
+      if (event.type === "qaGenerated") {
+        setFaq(event.qaPairs);
+      }
     }
   };
 
@@ -57,6 +65,15 @@ export default function RenderStreamData() {
         onChange={(e) => setUrl(e.target.value)}
       ></TextField.Root>
       <Button onClick={handleSubmit}>Submit</Button>
+      <img src={screenshot} />
+      <Flex gap="2" direction={"column"}>
+        {faq.map((pair) => (
+          <div key={pair.question}>
+            <h1>{pair.question}</h1>
+            <p>{pair.answer}</p>
+          </div>
+        ))}
+      </Flex>
     </div>
   );
 }

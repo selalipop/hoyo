@@ -8,8 +8,10 @@ type WebpageScrapedEvent = {
 type QAGeneratedEvent = {
   type: "qaGenerated";
   siteSummary: string;
-  questions: string[];
-  answers: string[];
+  qaPairs: {
+    question: string;
+    answer: string;
+  }[];
 };
 
 type PhoneNumberAssignedEvent = {
