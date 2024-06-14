@@ -5,6 +5,12 @@ import {
   ICustomerAccount,
   IFaqInstance,
 } from "@/backend/models";
+import { cosineSimilarity } from "@/util/cosineSimiliarity";
+import {
+  FireworksModel,
+  embeddingCreation,
+  fireworksInference,
+} from "@/util/fireworksAi";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -50,28 +56,65 @@ export async function POST(request: Request) {
     return Response.json({ success: false });
   }
 
-  
-  const faqs: IFaqInstance[] = await FaqInstance.find({
-    customerAccount: customer.id,
-  });
+  //   const faqs: IFaqInstance[] = await FaqInstance.find({
+  //     customerAccount: customer.id,
+  //   });
+  const queryEmbedding = await embeddingCreation(query);
+  const agg = [
+    {
+      $vectorSearch: {
+        index: "main_vector_index",
+        path: "embedding",
+        queryVector: queryEmbedding, // Adjust the query vector as needed
+        numCandidates: 5,
+        limit: 2,
+      },
+    },
+  ];
 
+  const faqs = await FaqInstance.aggregate(agg);
+  const result = await fireworksInference(FireworksModel.Llama8B, [
+    {
+      role: "user",
+      content: `
+    You are a helpful assistant that wants to answer the following question:
+    ${query}
+
+    You have the following FAQs to work with:
+    ${faqs
+      .map((faq: IFaqInstance) => {
+        return `Q: ${faq.question}, A:${
+          faq.answer
+        } Relevance Score: ${cosineSimilarity(
+          queryEmbedding,
+          faq.questionEmbedding
+        )}`;
+      })
+      .join("\n")}
+
+    If one of your FAQs matches the question, you should return the answer.
+    If not, you should return that you don't know.
+
+    Be willing to infer information, for example if a store is open 24/7, you should return that the store is open 24/7 even if the question is technically not in your FAQ.
+    `,
+    },
+  ]);
   console.log(
     "FAQ",
-    faqs.map((faq) => {
-      return `Q: ${faq.question}, A:${faq.answer}`;
+    faqs.map((faq: IFaqInstance) => {
+      return `Q: ${faq.question}, A:${
+        faq.answer
+      } Relevance Score: ${cosineSimilarity(
+        queryEmbedding,
+        faq.questionEmbedding
+      )}`;
     })
   );
+  console.log("Result", result);
   return Response.json({
     result: {
       success: true,
-      information: `
-  Found the following information:
-  ${faqs
-    .map((faq) => {
-      return `Q: ${faq.question}, A:${faq.answer}`;
-    })
-    .join("\n")}
-  `,
+      information: result,
     },
   });
 }
