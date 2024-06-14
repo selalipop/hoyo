@@ -12,7 +12,8 @@ interface FaqSchema {
 export async function extractWebpageFaq(
   webpageContent: string
 ): Promise<FaqSchema> {
-  const response = await bedrockInference(BedrockModel.ClaudeV3Opus, [
+  const questionCount = 20
+  const response = await bedrockInference(BedrockModel.ClaudeV3Sonnet, [
     {
       role: "system",
       content:
@@ -23,13 +24,9 @@ export async function extractWebpageFaq(
       content: `
 Let's say we're trying to answer questions using the content of this website. We don't want to literally mention the website, just infer questions one would have that could be answered by the page.
 Generate as many question answer pairs as you can with specific answers that this webpage has.
-Reply in the following JSON format:
+Reply with JSON that adheres to the following schema:
 '''
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Page Summary Schema",
-  "type": "object",
-  "properties": {
     "pageSummary": {
       "type": "string",
       "description": "One to two lines describing the page content"
@@ -39,7 +36,8 @@ Reply in the following JSON format:
       "description": "An array of question and answer objects",
       "items": {
         "type": "object",
-        "minCount": 10,
+        "minCount": ${questionCount},
+        "maxCount": ${questionCount},
         "properties": {
           "question": {
             "type": "string",
@@ -53,8 +51,6 @@ Reply in the following JSON format:
         "required": ["question", "answer"]
       }
     }
-  },
-  "required": ["pageSummary", "qaPairs"]
 }
 '''
 
@@ -62,6 +58,8 @@ The webpage content is below
 '''
 ${webpageContent}
 '''
+
+Return ${questionCount} question answer pairs that are most relevant to the webpage content.
 `,
     }
   ]);

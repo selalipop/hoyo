@@ -21,7 +21,7 @@ export async function bedrockInference(
   modelId: BedrockModel,
   messages: Array<Chat.ChatCompletionMessageParam>,
   temperature: number = 0.9,
-  stopTokens: string[] = [`</newStoryAddition>`, "}```", "}\n```"]
+  stopTokens: string[] = []
 ) {
   let systemPrompt;
   if (messages.at(0)?.role == "system") {
@@ -35,7 +35,7 @@ export async function bedrockInference(
         temperature: temperature,
         anthropic_version: "bedrock-2023-05-31",
         stop_sequences: stopTokens,
-        max_tokens: 8000
+        max_tokens: 8000,
       })
     ),
     modelId: modelId,
