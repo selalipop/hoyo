@@ -14,11 +14,12 @@ export async function embeddingCreation(text: string) {
 
     body: JSON.stringify({
       model: "nomic-ai/nomic-embed-text-v1.5",
-      text: text,
+      input: text,
     }),
   });
   const chatCompletion = await response.json();
-  return chatCompletion.choices[0].message.content!;
+  console.log(chatCompletion)
+  return chatCompletion.data[0].embedding!;
 }
 
 export async function fireworksInference(

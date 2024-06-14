@@ -67,6 +67,7 @@ export default function RenderStreamData() {
       <Button onClick={handleSubmit}>Submit</Button>
       <img src={screenshot} />
       <Flex gap="2" direction={"column"}>
+        
         {faq.map((pair) => (
           <div key={pair.question}>
             <h1>{pair.question}</h1>

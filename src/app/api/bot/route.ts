@@ -6,9 +6,14 @@ import { StreamingResponse } from "@/util/streamingResponse";
 import { extractWebpageFaq } from "./extractFaq";
 import { extractWebpageContent } from "./extractWebpageContent";
 import connectDB from "@/backend/connectDb";
-import { CustomerAccount, FaqInstance } from "@/backend/models";
+import {
+  CustomerAccount,
+  FaqInstance,
+  ICustomerAccount,
+} from "@/backend/models";
 import normalizeUrl from "normalize-url";
 import mongoose from "mongoose";
+import { embeddingCreation } from "@/util/fireworksAi";
 
 type Item = {
   key: string;
@@ -50,13 +55,13 @@ async function* createBot(
   const { pageContent, screenshot } = await extractWebpageContent(url);
   await connectDB();
 
-  const existingCustomer = await CustomerAccount.findOne({ website: url });
-  if (existingCustomer) {
-    yield {
-      type: "phoneNumberAssigned",
-      phoneNumber: existingCustomer.phoneNumber,
-    };
-  }
+  // const existingCustomer = await CustomerAccount.findOne({ website: url });
+  // if (existingCustomer) {
+  //   yield {
+  //     type: "phoneNumberAssigned",
+  //     phoneNumber: existingCustomer.phoneNumber,
+  //   };
+  // }
   yield {
     type: "webpageScraped",
     content: pageContent,
@@ -78,15 +83,18 @@ async function* createBot(
         question: pair.question,
         answer: pair.answer,
         customerAccount: customer.id,
+        questionEmbedding: await embeddingCreation(pair.question),
+        answerEmbedding: await embeddingCreation(pair.answer),
+        embedding: await embeddingCreation(pair.question + pair.answer),
       });
       await faqInstance.save();
     })
   );
   if (!customer.phoneNumber) {
-    const number = await buyNumber()
-    console.log("number", number)
-    customer.phoneNumber = number.number
-    await customer.save()
+    const number = await buyNumber();
+    console.log("number", number);
+    customer.phoneNumber = number.number;
+    await customer.save();
   }
   yield {
     type: "phoneNumberAssigned",
@@ -94,6 +102,9 @@ async function* createBot(
   };
 }
 async function buyNumber() {
+  return {
+    number: "12019758644",
+  };
   const options = {
     method: "POST",
     headers: {
@@ -109,26 +120,30 @@ async function buyNumber() {
     number: string;
   };
 }
-async function createOrFindCustomerAccount(url: string) {
+async function createOrFindCustomerAccount(
+  url: string
+): Promise<{ customer: ICustomerAccount; created: boolean }> {
   try {
-    // Use findOneAndUpdate to find a document, or insert if it doesn't exist
-    const customer = await CustomerAccount.findOneAndUpdate(
-      { website: url }, // Search condition
-      { website: url }, // Data to update or insert
-      { new: true, upsert: true } // Options: return the new doc if created
-    );
+    // First, try to find the document
+    let customer = await CustomerAccount.findOne({ website: url });
 
-    // The created field indicates whether the document was newly created
-    const created = !customer._id; // This check is simplified for logic purposes
-
-    // Return the customer account and a boolean indicating if it was created
-    return { customer, created };
+    if (customer) {
+      // If found, it means the customer was not newly created
+      return { customer, created: false };
+    } else {
+      // If not found, create a new customer account
+      customer = new CustomerAccount({ website: url });
+      await customer.save();
+      // Return the new customer account and indicate it was created
+      return { customer, created: true };
+    }
   } catch (error) {
     // Handle any errors that occur during the process
     console.error("Error creating or finding customer account:", error);
     throw error;
   }
 }
+
 
 export async function POST(req: NextRequest) {
   const bodyData = await req.json();
