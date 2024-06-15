@@ -61,7 +61,7 @@ export default function RenderStreamData() {
       }
       if (event.type === "phoneNumberAssigned") {
         const phoneNumber = parsePhoneNumber(event.phoneNumber);
-        setPhoneNumber(phoneNumber?.formatNational() ?? "");
+        setPhoneNumber(phoneNumber?.formatNational() ?? formatPhoneNumber(event.phoneNumber));
       }
     }
     setLoading(false);
@@ -110,4 +110,13 @@ export default function RenderStreamData() {
       </Flex>
     </Card>
   );
+}
+
+function formatPhoneNumber(phoneNumberString : string) {
+  var cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+  var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+  }
+  return phoneNumberString;
 }

@@ -6,6 +6,8 @@ import { StreamingResponse } from "@/util/streamingResponse";
 import { extractWebpageFaq } from "./extractFaq";
 import { extractWebpageContent } from "./extractWebpageContent";
 import connectDB from "@/backend/connectDb";
+export const maxDuration = 300; // This function can run for a maximum of 5 seconds
+
 import {
   CustomerAccount,
   FaqInstance,
