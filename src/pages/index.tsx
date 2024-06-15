@@ -60,8 +60,7 @@ export default function RenderStreamData() {
         setFaq(event.qaPairs);
       }
       if (event.type === "phoneNumberAssigned") {
-        const phoneNumber = parsePhoneNumber(event.phoneNumber);
-        setPhoneNumber(phoneNumber?.formatNational() ?? formatPhoneNumber(event.phoneNumber));
+        setPhoneNumber(formatPhoneNumber(event.phoneNumber));
       }
     }
     setLoading(false);

@@ -37,7 +37,7 @@ async function connectDB(): Promise<mongoose.Connection> {
       serverApi: { version: "1", strict: false, deprecationErrors: true },
     };
     cached.promise = mongoose
-      .connect("mongodb+srv://dev:1BdTjkAYIjvkfniM@main-cluster.uvoi0am.mongodb.net/", opts)
+      .connect(process.env.MONGODB_URI!, opts)
       .then((mongoose) => {
         return mongoose.connection;
       });
