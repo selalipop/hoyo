@@ -1,7 +1,7 @@
 import { BotCreationEvent } from "@/app/api/bot/botCreationEvent";
 import { useEffect, useState } from "react";
 import { useAsyncEffect } from "use-async-effect";
-import { Button, Flex, TextField } from "@radix-ui/themes";
+import { Button, Flex, TextField, Card, Heading, Text } from "@radix-ui/themes";
 
 export async function* streamingFetch<T>(
   input: RequestInfo | URL,
@@ -31,8 +31,10 @@ export default function RenderStreamData() {
     }[]
   >([]);
   const [url, setUrl] = useState<any[]>([]);
+  const [name, setName] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [screenshot, setScreenshot] = useState<string>("");
-
+    
   const handleSubmit = async () => {
     const headers = {
       Accept: "application/json",
@@ -43,9 +45,10 @@ export default function RenderStreamData() {
       method: "POST",
       body: JSON.stringify({
         url,
+        name,
       }),
     });
-
+    setLoading(true);
     for await (const event of events) {
       console.log("New Bot Creation Event", event);
       if (event.type === "webpageScraped") {
@@ -55,26 +58,40 @@ export default function RenderStreamData() {
         setFaq(event.qaPairs);
       }
     }
+    setLoading(false);
   };
 
   return (
-    <div>
-      <TextField.Root
-        placeholder="Search the docs…"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      ></TextField.Root>
-      <Button onClick={handleSubmit}>Submit</Button>
-      <img src={screenshot} />
-      <Flex gap="2" direction={"column"}>
-        
-        {faq.map((pair) => (
-          <div key={pair.question}>
-            <h1>{pair.question}</h1>
-            <p>{pair.answer}</p>
-          </div>
-        ))}
+    <Card m={"9"}>
+      <Flex direction={"column"} gap="2">
+        <Heading>
+          Create an AI customer support number for your website!
+        </Heading>
+        <Heading size={"2"}>Enter your URL</Heading>
+        <TextField.Root
+          placeholder="Where can we find your information…"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <Heading size={"2"}>Enter your Business Name</Heading>
+        <TextField.Root
+          placeholder="Search the docs…"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Button onClick={handleSubmit} disabled={!url || !name} loading={loading}>
+          Submit
+        </Button>
+        <img src={screenshot} />
+        <Flex gap="2" direction={"column"}>
+          {faq.map((pair) => (
+            <Card key={pair.question} variant="surface">
+              <Heading>{pair.question}</Heading>
+              <Text>{pair.answer}</Text>
+            </Card>
+          ))}
+        </Flex>
       </Flex>
-    </div>
+    </Card>
   );
 }

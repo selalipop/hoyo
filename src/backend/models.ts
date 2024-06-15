@@ -11,6 +11,7 @@ export interface ICustomerAccount extends Document {
 export interface IFaqInstance extends Document {
     question: string;
     answer: string;
+    customerAccountString: string,
     customerAccount: mongoose.Types.ObjectId;
     embedding: number[]
     questionEmbedding: number[]
@@ -29,6 +30,7 @@ const customerAccountSchema = new Schema<ICustomerAccount>({
 const faqInstanceSchema = new Schema<IFaqInstance>({
     question: { type: String, required: true },
     answer: { type: String, required: true },
+    customerAccountString: { type: String, required: false },
     customerAccount: { type: Schema.Types.ObjectId, ref: 'CustomerAccount', required: true },
     embedding: { type: [Number], required: false },
     questionEmbedding: { type: [Number], required: false },

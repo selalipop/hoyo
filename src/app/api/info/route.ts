@@ -13,6 +13,7 @@ import {
 } from "@/util/fireworksAi";
 
 export const dynamic = "force-dynamic"; // defaults to auto
+export const maxDuration = 300; // This function can run for a maximum of 5 seconds
 
 const fetchCall = async (id: string) => {
   const url = `https://api.vocode.dev/v1/calls?id=${id}`;
@@ -63,11 +64,14 @@ export async function POST(request: Request) {
   const agg = [
     {
       $vectorSearch: {
-        index: "main_vector_index",
+        index: "vector_index",
         path: "embedding",
         queryVector: queryEmbedding, // Adjust the query vector as needed
-        numCandidates: 5,
-        limit: 2,
+        numCandidates: 10,
+        limit: 5,
+        filter: {
+          customerAccountString: customer.id.toString(),
+        },
       },
     },
   ];
