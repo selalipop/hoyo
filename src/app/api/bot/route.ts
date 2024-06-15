@@ -57,13 +57,11 @@ async function* createBot(
 
   const existingCustomer = await CustomerAccount.findOne({ website: url });
   if (existingCustomer) {
-    const faqInstances = await getFaqInstancesForCompany(existingCustomer.id);
-    if (faqInstances && faqInstances.length > 0) {
-      yield {
-        type: "phoneNumberAssigned",
-        phoneNumber: existingCustomer.phoneNumber,
-      };
-    }
+    yield {
+      type: "phoneNumberAssigned",
+      phoneNumber: existingCustomer.phoneNumber,
+    };
+    return
   }
 
   const { pageContent, screenshot } = await extractWebpageContent(url);
@@ -165,9 +163,9 @@ Keep you language short and concise, and throw in some disfluencies and lexical 
 Any time you answer a question about the website, use the information lookup tool!
 ...
 `;
-  const url =
-    `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` ??
-    "https://quick-treefrog-modest.ngrok-free.app";
+  const url = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` 
+    : "https://quick-treefrog-modest.ngrok-free.app";
   const options = {
     method: "POST",
     headers: {

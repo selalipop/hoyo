@@ -2,6 +2,7 @@ import { BotCreationEvent } from "@/app/api/bot/botCreationEvent";
 import { useEffect, useState } from "react";
 import { useAsyncEffect } from "use-async-effect";
 import { Button, Flex, TextField, Card, Heading, Text } from "@radix-ui/themes";
+import parsePhoneNumber from "libphonenumber-js";
 
 export async function* streamingFetch<T>(
   input: RequestInfo | URL,
@@ -33,8 +34,9 @@ export default function RenderStreamData() {
   const [url, setUrl] = useState<any[]>([]);
   const [name, setName] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [screenshot, setScreenshot] = useState<string>("");
-    
+
   const handleSubmit = async () => {
     const headers = {
       Accept: "application/json",
@@ -57,6 +59,10 @@ export default function RenderStreamData() {
       if (event.type === "qaGenerated") {
         setFaq(event.qaPairs);
       }
+      if (event.type === "phoneNumberAssigned") {
+        const phoneNumber = parsePhoneNumber(event.phoneNumber);
+        setPhoneNumber(phoneNumber?.formatNational() ?? "");
+      }
     }
     setLoading(false);
   };
@@ -65,7 +71,7 @@ export default function RenderStreamData() {
     <Card m={"9"}>
       <Flex direction={"column"} gap="2">
         <Heading>
-          Create an AI customer support number for your website!
+          hoyo: Create an AI customer support number for your website!
         </Heading>
         <Heading size={"2"}>Enter your URL</Heading>
         <TextField.Root
@@ -79,7 +85,11 @@ export default function RenderStreamData() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <Button onClick={handleSubmit} disabled={!url || !name} loading={loading}>
+        <Button
+          onClick={handleSubmit}
+          disabled={!url || !name}
+          loading={loading}
+        >
           Submit
         </Button>
         <img src={screenshot} />
@@ -91,6 +101,12 @@ export default function RenderStreamData() {
             </Card>
           ))}
         </Flex>
+        {phoneNumber && (
+          <Flex direction={"column"}>
+            <Heading size={"6"}>Your Phone Number</Heading>
+            <Heading size={"8"}>{phoneNumber}</Heading>
+          </Flex>
+        )}
       </Flex>
     </Card>
   );
