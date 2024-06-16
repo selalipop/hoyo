@@ -12,14 +12,54 @@ export async function* streamingFetch<T>(
   const reader = response.body?.getReader();
   const decoder = new TextDecoder("utf-8");
 
+  let buffer = "";
+  let depth = 0;
+
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
 
-    try {
-      yield JSON.parse(decoder.decode(value)) as T;
-    } catch (e: any) {
-      console.warn(e.message);
+    buffer += decoder.decode(value);
+
+    while (buffer.length > 0) {
+      let index = 0;
+      let char = buffer[index];
+
+      while (char !== "{" && index < buffer.length) {
+        char = buffer[++index];
+      }
+
+      if (char === "{") {
+        depth = 1;
+        let endIndex = index + 1;
+
+        while (depth > 0 && endIndex < buffer.length) {
+          char = buffer[endIndex];
+
+          if (char === "{") {
+            depth++;
+          } else if (char === "}") {
+            depth--;
+          }
+
+          endIndex++;
+        }
+
+        if (depth === 0) {
+          const jsonString = buffer.slice(index, endIndex);
+          buffer = buffer.slice(endIndex);
+
+          try {
+            yield JSON.parse(jsonString) as T;
+          } catch (e: any) {
+            console.warn(e.message);
+          }
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
     }
   }
 }
@@ -111,11 +151,11 @@ export default function RenderStreamData() {
   );
 }
 
-function formatPhoneNumber(phoneNumberString : string) {
-  var cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+function formatPhoneNumber(phoneNumberString: string) {
+  var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
   var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
   if (match) {
-    return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    return "(" + match[1] + ") " + match[2] + "-" + match[3];
   }
   return phoneNumberString;
 }
