@@ -96,9 +96,10 @@ async function* createBot(
     })
   );
   if (!customer.phoneNumber) {
-    const number = await buyNumber();
-    console.log("number", number);
-    customer.phoneNumber = number.number;
+    // const number = await buyNumber();
+    // console.log("number", number);
+    //customer.phoneNumber = number.number;
+    customer.phoneNumber = "14153296675";
     await customer.save();
   }
   const result = await setAgent(customer.phoneNumber, name);
@@ -124,6 +125,7 @@ async function buyNumber() {
     number: string;
   };
 }
+
 async function setAgent(number: string, name: string) {
   const agentId = uuidv4();
   const promptId = uuidv4();
