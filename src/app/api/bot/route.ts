@@ -255,5 +255,5 @@ export async function POST(req: NextRequest) {
 
   const stream = makeStream(createBot(bodyData.url, bodyData.name));
   const response = new StreamingResponse(stream);
-  return response;
+  return new Response(stream);
 }

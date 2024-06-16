@@ -7,6 +7,7 @@ export const makeStream = <T extends Record<string, unknown>>(
       for await (const chunk of generator) {
         const chunkData = encoder.encode(JSON.stringify(chunk));
         controller.enqueue(chunkData);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
       controller.close();
     },
