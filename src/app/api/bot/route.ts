@@ -87,13 +87,13 @@ async function* createBot(
       await faqInstance.save();
     })
   );
-  if (!customer.phoneNumber) {
-    // const number = await buyNumber();
-    // console.log("number", number);
-    //customer.phoneNumber = number.number;
-    customer.phoneNumber = "14153296675";
-    await customer.save();
-  }
+  // if (!customer.phoneNumber) {
+  //   // const number = await buyNumber();
+  //   // console.log("number", number);
+  //   //customer.phoneNumber = number.number;
+  // }
+  customer.phoneNumber = "12094888400";
+  await customer.save();
   const result = await setAgent(customer.phoneNumber, name);
   console.log("result", JSON.stringify(result, null, 2));
   yield {
