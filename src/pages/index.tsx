@@ -11,55 +11,50 @@ export async function* streamingFetch<T>(
   const response = await fetch(input, init);
   const reader = response.body?.getReader();
   const decoder = new TextDecoder("utf-8");
-
   let buffer = "";
-  let depth = 0;
 
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value);
+    let jsonStart = buffer.indexOf("{");
 
-    while (buffer.length > 0) {
-      let index = 0;
-      let char = buffer[index];
+    while (jsonStart !== -1) {
+      let jsonEnd = jsonStart;
+      let openBraces = 1;
 
-      while (char !== "{" && index < buffer.length) {
-        char = buffer[++index];
+      while (openBraces > 0) {
+        jsonEnd++;
+        if (jsonEnd >= buffer.length) break;
+
+        if (buffer[jsonEnd] === "{") {
+          openBraces++;
+        } else if (buffer[jsonEnd] === "}") {
+          openBraces--;
+        }
       }
 
-      if (char === "{") {
-        depth = 1;
-        let endIndex = index + 1;
-
-        while (depth > 0 && endIndex < buffer.length) {
-          char = buffer[endIndex];
-
-          if (char === "{") {
-            depth++;
-          } else if (char === "}") {
-            depth--;
-          }
-
-          endIndex++;
+      if (openBraces === 0) {
+        try {
+          const jsonString = buffer.substring(jsonStart, jsonEnd + 1);
+          yield JSON.parse(jsonString) as T;
+          buffer = buffer.slice(jsonEnd + 1);
+        } catch (e: any) {
+          console.warn(e.message);
         }
-
-        if (depth === 0) {
-          const jsonString = buffer.slice(index, endIndex);
-          buffer = buffer.slice(endIndex);
-
-          try {
-            yield JSON.parse(jsonString) as T;
-          } catch (e: any) {
-            console.warn(e.message);
-          }
-        } else {
-          break;
-        }
-      } else {
-        break;
       }
+
+      jsonStart = buffer.indexOf("{", jsonEnd);
+    }
+  }
+
+  // Process any remaining data in the buffer
+  if (buffer.trim() !== "") {
+    try {
+      yield JSON.parse(buffer) as T;
+    } catch (e: any) {
+      console.warn(e.message);
     }
   }
 }
