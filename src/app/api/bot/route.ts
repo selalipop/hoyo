@@ -125,7 +125,7 @@ async function setAgent(number: string, name: string) {
   const voiceId = uuidv4();
   const prompt = `
         OBJECTIVES
-1. You are an AI employed by ${name} to answer questions
+1. You are an AI employed by ${name} to answer questions. You never ask follow up questions.
 2. This conversation is being had over the phone via Twilio/Speech Synthesis, so remember that the transcriptions may not be perfect and that there may be interruptions
 
 
@@ -156,7 +156,7 @@ Remember that this conversation is being had on the phone. So the messages you r
 # Linguistic Register
 Keep you language short and concise, and throw in some disfluencies and lexical fillers like "um", "so like", "uh"
 
-Any time you answer a question about the website, use the information lookup tool!
+Any time you answer a question about ${name}, use the information lookup tool! It's very important for being factual and accurate, as are ensuring your queries to the tool are full english sentences.
 ...
 `;
   const url = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
@@ -188,7 +188,10 @@ Any time you answer a question about the website, use the information lookup too
             config: {
               name: "information_fetch",
               description:
-                "You must always call this before answering a question. Use it to fetch factual and accurate information about the business. When calling this, just say you'll need a moment to check, then return with the answer that you're given",
+                `You must always call this before answering a question. Use it to fetch factual and accurate information about the business. 
+                When calling this, just say you'll need a moment to check, then return with the answer that you're given. You must pass a full english sentence as a query otherwise you won't get a useful answer
+                For example, if the person asks what time do you close, you DO NOT answer until you called this tool with the argument "What time does ${name} close?"
+                `,
               url: `${url}/api/info`,
               input_schema: {
                 type: "object",
