@@ -26,6 +26,7 @@ export async function extractWebpageFaq(
         content: `
 Let's say we're trying to answer questions using the content of this website. We don't want to literally mention the website, just infer questions one would have that could be answered by the page.
 Generate as many question answer pairs as you can with specific answers that this webpage has.
+Your questions should be based on the presense of information, not the abscense of it. It's ok if questions overlap a bit.
 Reply with JSON that adheres to the following schema:
 '''
 {
