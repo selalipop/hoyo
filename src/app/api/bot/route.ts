@@ -57,14 +57,6 @@ async function* createBot(
   url = normalizeUrl(url);
   await connectDB();
 
-  const existingCustomer = await CustomerAccount.findOne({ website: url });
-  if (existingCustomer) {
-    yield {
-      type: "phoneNumberAssigned",
-      phoneNumber: existingCustomer.phoneNumber,
-    };
-    return
-  }
 
   const { pageContent, screenshot } = await extractWebpageContent(url);
   yield {
