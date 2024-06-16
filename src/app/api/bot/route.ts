@@ -80,6 +80,7 @@ async function* createBot(
         question: pair.question,
         answer: pair.answer,
         customerAccount: customer.id,
+        customerAccountString: customer.id.toString(),
         questionEmbedding: await embeddingCreation(pair.question),
         answerEmbedding: await embeddingCreation(pair.answer),
         embedding: await embeddingCreation(pair.question + pair.answer),
