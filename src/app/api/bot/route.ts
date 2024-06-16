@@ -57,7 +57,6 @@ async function* createBot(
   url = normalizeUrl(url);
   await connectDB();
 
-
   const { pageContent, screenshot } = await extractWebpageContent(url);
   yield {
     type: "webpageScraped",
@@ -74,6 +73,25 @@ async function* createBot(
     qaPairs: faq.qaPairs,
   };
   const { customer } = await createOrFindCustomerAccount(url);
+  const testPhoneNumber = "12094888400";
+  try{
+    const oldCustomers = await CustomerAccount.find<ICustomerAccount>({
+      phoneNumber: testPhoneNumber,
+    });
+    if (oldCustomers) {
+      await Promise.all(
+        oldCustomers.map(async (customer) => {
+          try {
+            await customer.deleteOne();
+          } catch (error) {
+            console.error("Error deleting old customer:", error);
+          } 
+        })
+      );
+    }
+  } catch (error) {
+    console.error("Error deleting old customers:", error);
+  }
   await Promise.all(
     faq.qaPairs.map(async (pair) => {
       const faqInstance = new FaqInstance({
@@ -93,7 +111,7 @@ async function* createBot(
   //   // console.log("number", number);
   //   //customer.phoneNumber = number.number;
   // }
-  customer.phoneNumber = "12094888400";
+  customer.phoneNumber = testPhoneNumber;
   await customer.save();
   const result = await setAgent(customer.phoneNumber, name);
   console.log("result", JSON.stringify(result, null, 2));
@@ -160,8 +178,8 @@ Keep you language short and concise, and throw in some disfluencies and lexical 
 Any time you answer a question about ${name}, use the information lookup tool! It's very important for being factual and accurate, as are ensuring your queries to the tool are full english sentences.
 ...
 `;
-  const url = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` 
+  const url = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
     : "https://quick-treefrog-modest.ngrok-free.app";
   const options = {
     method: "POST",
@@ -188,8 +206,7 @@ Any time you answer a question about ${name}, use the information lookup tool! I
             type: "action_external",
             config: {
               name: "information_fetch",
-              description:
-                `You must always call this before answering a question. Use it to fetch factual and accurate information about the business. 
+              description: `You must always call this before answering a question. Use it to fetch factual and accurate information about the business. 
                 When calling this, just say you'll need a moment to check, then return with the answer that you're given. You must pass a full english sentence as a query otherwise you won't get a useful answer
                 For example, if the person asks what time do you close, you DO NOT answer until you called this tool with the argument "What time does ${name} close?"
                 `,

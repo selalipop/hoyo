@@ -77,14 +77,14 @@ export async function POST(request: Request) {
   ];
 
   const faqs = await FaqInstance.aggregate(agg);
-  const result = await fireworksInference(FireworksModel.Llama8B, [
+  const result = await fireworksInference(FireworksModel.Llama70B, [
     {
       role: "user",
       content: `
-    You are a helpful assistant that wants to answer the following question:
+    You are a helpful assistant that wants to tell me how answer the following question:
     ${query}
 
-    You have the following FAQs to work with:
+    We have the following FAQs to work with:
     ${faqs
       .map((faq: IFaqInstance) => {
         return `Q: ${faq.question}, A:${
@@ -96,10 +96,14 @@ export async function POST(request: Request) {
       })
       .join("\n")}
 
-    If one of your FAQs matches the question, you should return the answer.
+    If one of your FAQs is relevant to the question, you should return the answer.
     If not, you should return that you don't know.
 
-    Be willing to infer information, for example if a store is open 24/7, you should return that the store is open 24/7 even if the question is technically not in your FAQ.
+    You can't ask follow up questions or get more context.
+
+    You can only answer if there's a relevant FAQ, state the exact FAQ that's relevant.
+
+    State your answer as an instruction to me, like "You should say the answer is X" or "You should say you don't know"
     `,
     },
   ]);
