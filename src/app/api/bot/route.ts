@@ -72,7 +72,6 @@ async function* createBot(
     siteSummary: faq.pageSummary,
     qaPairs: faq.qaPairs,
   };
-  const { customer } = await createOrFindCustomerAccount(url);
   const testPhoneNumber = "12094888400";
   try{
     const oldCustomers = await CustomerAccount.find<ICustomerAccount>({
@@ -92,6 +91,7 @@ async function* createBot(
   } catch (error) {
     console.error("Error deleting old customers:", error);
   }
+  const { customer } = await createOrFindCustomerAccount(url);
   await Promise.all(
     faq.qaPairs.map(async (pair) => {
       const faqInstance = new FaqInstance({

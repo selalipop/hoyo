@@ -14,8 +14,8 @@ export async function extractWebpageFaq(
   webpageContent: string
 ): Promise<FaqSchema> {
   return retry(async () => {
-    const questionCount = 10;
-    const response = await bedrockInference(BedrockModel.ClaudeV3Haiku, [
+    const questionCount = 30;
+    const response = await bedrockInference(BedrockModel.ClaudeV3Sonnet, [
       {
         role: "system",
         content:
