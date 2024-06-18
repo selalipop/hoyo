@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   ];
 
   const faqs = await FaqInstance.aggregate(agg);
-  const result = await fireworksInference(FireworksModel.Llama8B, [
+  const result = await fireworksInference(FireworksModel.Llama70B, [
     {
       role: "user",
       content: `
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
     You can only answer if there's a relevant FAQ, state the exact FAQ that's relevant.
 
-    State your answer as an instruction to me, like "Here's some useful information: X" or "There's no useful information on that".
+    State your answer as an instruction to me, like "Here's some useful information: A" or "There's no useful information on that".
     If an FAQ says the website does not have that information, assume the answer is you don't know.
     For example, if the FAQ is "Does ${customer.name} have a return policy?", and the answer is "The website does not mention a return policy", you should say "There's no useful information on that" not "No.".
     `,
