@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
     You can only answer if there's a relevant FAQ, state the exact FAQ that's relevant.
 
-    State your answer as an instruction to me, like "Here's some useful information: A" or "There's no useful information on that".
+    State your answer as an instruction to me, like "Here's some useful information, use it to answer the question you were asked concisely: A" or "There's no useful information on that".
     If an FAQ says the website does not have that information, assume the answer is you don't know.
     For example, if the FAQ is "Does ${customer.name} have a return policy?", and the answer is "The website does not mention a return policy", you should say "There's no useful information on that" not "No.".
     `,
